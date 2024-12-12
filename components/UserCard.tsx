@@ -14,6 +14,7 @@ type RecipeProps = {
     item: RecipeType
 }
 
+
 const RecipeCard: React.FC<RecipeProps> = ({deleteRecipe, item}) => {
   return (
         <View style={styles.container}>

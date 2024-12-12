@@ -1,17 +1,20 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Drawer } from "expo-router/drawer";
 import { Image } from "react-native";
+import { RecipeProvider } from "../providers/RecipeProvider";
 
 export default function Layout() {
   return (
+    <RecipeProvider>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
         screenOptions={{
           drawerPosition: "left",
-          headerShown: true,
+          headerShown: false,
           headerStyle: {
             backgroundColor: "#FF3131",
             height: 100,
+            marginTop: 50
           },
           drawerStyle: {
             backgroundColor: "#000000",
@@ -50,5 +53,6 @@ export default function Layout() {
         
       </Drawer>
     </GestureHandlerRootView>
+    </RecipeProvider>
   );
 }

@@ -1,249 +1,163 @@
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
-  ImageBackground,
-  Alert,
-  ToastAndroid,
-  Button,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-import { useEffect, useState, Component } from "react";
-import * as NavigatorBar from "expo-navigation-bar";
-import CustomInput from "../components/CustomInput";
-import {Link} from "expo-router";
-export default class Login extends Component {
-  constructor() {
-    // allow you to set initial state to the app before methods are called
+import React, { useState, useContext } from 'react';
+import { 
+    FlatList, 
+    View, 
+    Text, 
+    StyleSheet, 
+    TouchableOpacity, 
+    TextInput,
+    ActivityIndicator, 
+    ImageBackgroundBase
+} from 'react-native';
+import FAB from '@/components/FAB';
+import RecipeCard from '@/components/UserCard';
+import { RecipeContext } from '@/providers/RecipeProvider';
+import { ImageBackground } from 'react-native-web';
 
-    super(); //allows you access to props from main class
+const RecipeList = () => {
+    const { recipes, categories, isLoading } = useContext(RecipeContext);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    this.handlePress = this.handlePress.bind(this);
-
-    this.state = {
-      email: "",
-      Password: "",
-      errors: {}
-    };
-  }
-
-  //componentDidUpdate: component is added to the view
-  //componentDidUpdate: component state/props are updated
-  //componentWillUnmount: component will be removed from view
-
-
-componentDidUpdate() {
-  console.log({state:this.state});
-  
-};
-
-componentDidMount(){
-  console.log('mounted');
-//set the state of the component
-//fetch data from api and database
-//add event listeners or subscriptions
-  
-};
-
-componentWillUnmount() {
-  console.log('unmounted');
-  //for removing event listeners or subscriptions relative to api
-  
-};
-
-  // const [firstName, setFirstName] = useState('');
-  // const [lastName, setLastName] = useState('');
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [confirmPassword, setConfirmPassword] = useState('');
-
-  // useEffect(() => {
-  //   console.log(firstName);
-  //   console.log(lastName)
-  //   console.log(email)
-  //   console.log(password)
-  //   console.log(confirmPassword)
-  // }, [firstName, lastName, email, password, confirmPassword]);
-
-  // useEffect(() => {
-  //   NavigatorBar.setBackgroundColorAsync("#010789");
-  //   NavigatorBar.setBorderColorAsync("#BDBDBD");
-  // }, []);
-
-  handlePress = () => {
-    Alert.alert("Alert", "Button Pressed", [
-      { text: "OK", onPress: () => console.log("OK Pressed") },
-      {
-        text: "Cancel",
-        style: "cancel",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => console.log("Delete Pressed"),
-      },
-    ]);
-  };
-
-  handleLongPress = () => {
-    ToastAndroid.show("User Long Pressed Button", 5000);
-  };
-
-  handleShowAlert = () => {
-    ToastAndroid.show("User Pressed Button", 5000);
-  };
-
- handleInput = (type, stateName, value) => {
-  this.setState(state => ({
-    ...state,
-    errors: {
-      ...state.errors,
-      [stateName]: this.validateInput(type, value)
-    }
-  }))
- };
-
- validateInput = (type, value) => {
-  if(value.trim() === "") return {
-  valid: false,
-  error: 'Input required'
-    }
-    if (type === 'email') {
-      return /\S+\@\S+\.\S+/.test(value) ? {
-        valid: true, error: null
-      }: {
-        valid:false, error: 'Email required'}
-    }
-
-      if(type ==='string') {
-        return /([A-Za-z])+/.test(value) ? {
-          valid:true, error:null
-        } : {
-          valid: false, error: 'Only Use Alphabets For Password)'
-        }
-      }
-    
- };
-
- render() {
-    return (
-        <ImageBackground
-          resizeMode="cover"
-          style={{ width: "100%", height: "100%" }}
-          onLoadStart={() => console.log("Loading")}
-          onLoadEnd={() => console.log("Loaded")}
-          source={{
-            uri: "https://i.pinimg.com/736x/59/54/61/59546197baae43e5cd4612bbe1d4424d.jpg",
-          }}
-        >
-          <ScrollView contentContainerStyle={styles.ScrollView}>
-            <Text style={styles.title}>Login</Text>
-            <CustomInput 
-            name="Email" 
-            onChange={(text) => this.setState({email: text})}
-            onBlur={ () => this.handleInput('email', 'email', this.state.email)}
-            error={this.state.errors?.email?.error}
-
-            />
-            <CustomInput 
-            name="Password" 
-            onChange={(text) => this.setState({password: text})}
-            onBlur={ () => this.handleInput('string', 'password', this.state.password)}
-            error={this.state.errors?.password?.error}
-            />
-            <Pressable style={styles.button}>
-              <Text style={styles.buttonText} onPress={this.handlePress}>
-                Login
-              </Text>
-            </Pressable>
-            <View>
-              <Text style={styles.SignUp}>Don't have an account?</Text>
-              <Pressable>
-                <Link
-                  style={styles.signUpButton}
-                  href={{pathname:"/Registration", params: {from: "Login", redirectTo: "Home"}}}
-                >
-                  Signup
-                </Link>
-              </Pressable>
-            </View>
-            <Text style={{color: 'BDBDBD'}}>{this.state.email}</Text>
-            <Text style={{color: 'BDBDBD'}}>{this.state.password}</Text>
-
-       </ScrollView>
-        </ImageBackground>
-
+    // Filter recipes based on category and search query
+    const filteredRecipes = recipes.filter(recipe => 
+        (!selectedCategory || recipe.strCategory === selectedCategory) &&
+        recipe.strMeal.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  };
+
+    const renderCategoryButton = ({ item }) => (
+        <TouchableOpacity 
+            style={[
+                styles.categoryButton, 
+                selectedCategory === item.strCategory && styles.selectedCategoryButton
+            ]}
+            onPress={() => {
+                setSelectedCategory(
+                    selectedCategory === item.strCategory ? null : item.strCategory
+                );
+                // Reset search when selecting category
+                setSearchQuery('');
+            }}
+        >
+            <Text style={styles.categoryButtonText}>{item.strCategory}</Text>
+        </TouchableOpacity>
+    );
+
+    const renderRecipeCard = ({ item }) => (
+        <RecipeCard item={item} />
+    );
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF6347" />
+                <Text style={styles.loadingText}>Loading Recipes...</Text>
+            </View>
+        );
+    }
+
+    return (
+        <ImageBackground scource={require('../assets/bg.jpg')}>
+        <View style={styles.container}>
+            <TextInput
+                style={styles.searchInput}
+                placeholder="Search Recipes..."
+                value={searchQuery}
+                onChangeText={(text) => {
+                    setSearchQuery(text);
+                    // Reset category when searching
+                    setSelectedCategory(null);
+                }}
+            />
+
+            <FlatList
+                data={categories}
+                renderItem={renderCategoryButton}
+                keyExtractor={(item) => item.idCategory}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoryList}
+            />
+
+            <FlatList
+                data={filteredRecipes}
+                renderItem={renderRecipeCard}
+                keyExtractor={(item) => item.idMeal}
+                numColumns={2}
+                columnWrapperStyle={styles.columnWrapper}
+                ListEmptyComponent={() => (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>
+                            {searchQuery || selectedCategory 
+                                ? "No recipes found" 
+                                : "Start exploring recipes!"}
+                        </Text>
+                    </View>
+                )}
+            />
+            <FAB />
+        </View>
+        </ImageBackground>
+    )
 }
-  
 
-
+export default RecipeList;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "black",
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  ScrollView: {
-    gap: 15,
-    paddingVertical: 20,
-  },
-  title: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 20,
-    textAlign: "center",
-    alignItems: "center",
-  },
-  input: {
-    backgroundColor: "black",
-    color: "white",
-    padding: 15,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "grey",
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  button: {
-    backgroundColor: "#306A68",
-    padding: 15,
-    marginTop: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    textAlign: "center",
-    textTransform: "uppercase",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-  SignUp: {
-    color: "white",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  signUpButton: {
-    color: "#306A68",
-    textAlign: "center",
-    marginTop: 20,
-    borderColor: "#306A68",
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+        marginTop: 40
+    },
+    searchInput: {
+        margin: 10,
+        padding: 10,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#ddd'
+    },
+    categoryList: {
+        maxHeight: 60,
+        marginBottom: 10,
+        height  : 50
+    },
+    categoryButton: {
+        backgroundColor: '#e0e0e0',
+        padding: 10,
+        borderRadius: 20,
+        marginHorizontal: 5
+    },
+    selectedCategoryButton: {
+        backgroundColor: '#FF6347'
+    },
+    categoryButtonText: {
+        color: 'black'
+    },
+    columnWrapper: {
+        justifyContent: 'space-between',
+        padding: 10
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 50
+    },
+    emptyText: {
+        fontSize: 18,
+        color: '#888',
+        textAlign: 'center'
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5'
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#666'
+    }
 });

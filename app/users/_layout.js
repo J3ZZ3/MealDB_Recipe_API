@@ -13,12 +13,7 @@ const RecipeLayout = () => {
                     headerTitleStyle: { fontWeight: 'bold' }
                 }}
             >
-                <Stack.Screen 
-                    name="index" 
-                    options={{
-                        headerTitle: 'Recipes',
-                    }} 
-                />
+            
                 <Stack.Screen 
                     name="[id]" 
                     options={{
